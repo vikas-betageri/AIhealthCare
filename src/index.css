@@ -1,0 +1,84 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  
+  --color-medical-50: #EFF6FF;
+  --color-medical-100: #DBEAFE;
+  --color-medical-200: #BFDBFE;
+  --color-medical-300: #93C5FD;
+  --color-medical-400: #60A5FA;
+  --color-medical-500: #3B82F6;
+  --color-medical-600: #2563EB;
+  --color-medical-700: #1D4ED8;
+  --color-medical-800: #1E40AF;
+  --color-medical-900: #1E3A8A;
+}
+
+body {
+  @apply bg-slate-50 text-slate-800 font-sans antialiased transition-colors duration-300;
+}
+
+.dark body {
+  @apply bg-[#0F172A] text-slate-100;
+}
+
+.medical-gradient {
+  background: linear-gradient(135deg, #1D4ED8 0%, #1E3A8A 100%);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.dark .glass-card {
+  background: rgba(30, 41, 59, 0.7);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.card-shadow {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  @apply border border-slate-100 transition-all;
+}
+
+.dark .card-shadow {
+  @apply border-slate-800 bg-[#1E293B] shadow-2xl;
+}
+
+.sidebar-link {
+  @apply flex items-center gap-3 px-6 py-3 transition-all duration-200 text-slate-600 hover:bg-slate-50;
+}
+
+.dark .sidebar-link {
+  @apply text-slate-400 hover:bg-slate-800 hover:text-white;
+}
+
+.sidebar-link-active {
+  background: #EFF6FF;
+  border-right: 4px solid #2563EB;
+  color: #1D4ED8;
+  @apply font-medium;
+}
+
+.dark .sidebar-link-active {
+  background: rgba(37, 99, 235, 0.1);
+  border-color: #3B82F6;
+  color: #60A5FA;
+}
+
+.dark .bg-white {
+  @apply bg-[#1E293B] border-slate-800;
+}
+
+.dark .text-slate-900 { @apply text-white; }
+.dark .text-slate-800 { @apply text-slate-100; }
+.dark .text-slate-700 { @apply text-slate-200; }
+.dark .text-slate-600 { @apply text-slate-300; }
+.dark .text-slate-500 { @apply text-slate-400; }
+.dark .bg-slate-50 { @apply bg-[#0F172A]; }
+.dark .border-slate-100 { @apply border-slate-800; }
+.dark .border-slate-200 { @apply border-slate-700; }
