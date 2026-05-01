@@ -67,6 +67,12 @@ const AIReportAnalysis = ({ report, language = 'en' }) => {
     );
   }
 
+  const listToText = (items) => {
+    if (!items) return '';
+    if (Array.isArray(items)) return items.join('. ');
+    return String(items);
+  };
+
   const handleSpeak = () => {
     if (!analysis) return;
 
@@ -74,7 +80,18 @@ const AIReportAnalysis = ({ report, language = 'en' }) => {
       stopSpeaking();
       setIsSpeaking(false);
     } else {
-      const textToSpeak = `${analysis.title}. ${analysis.details}. ${analysis.solution}. ${analysis.homeRemedy}. ${analysis.medicine}. ${analysis.precautions}. ${analysis.steps}`;
+      const textToSpeak = [
+        analysis.summary,
+        listToText(analysis.keyObservations),
+        listToText(analysis.abnormalFindings),
+        listToText(analysis.possibleIndications),
+        listToText(analysis.recommendations),
+        analysis.riskLevel ? `Risk level: ${analysis.riskLevel}` : '',
+        analysis.emergencyWarning ? `Emergency warning: ${analysis.emergencyWarning}` : ''
+      ]
+        .filter(Boolean)
+        .join('. ');
+
       speakText(textToSpeak, language);
       setIsSpeaking(true);
     }
@@ -83,24 +100,20 @@ const AIReportAnalysis = ({ report, language = 'en' }) => {
   const handleCopy = () => {
     if (!analysis) return;
 
-    const textToCopy = `
-${analysis.title}
+    const textToCopy = `Summary: ${analysis.summary || 'N/A'}
 
-${analysis.disease}
+Key Observations: ${listToText(analysis.keyObservations) || 'N/A'}
 
-Details: ${analysis.details}
+Abnormal Findings: ${listToText(analysis.abnormalFindings) || 'N/A'}
 
-Solution: ${analysis.solution}
+Possible Indications: ${listToText(analysis.possibleIndications) || 'N/A'}
 
-Home Remedy: ${analysis.homeRemedy}
+Risk Level: ${analysis.riskLevel || 'N/A'}
 
-Medicine: ${analysis.medicine}
+Recommendations: ${listToText(analysis.recommendations) || 'N/A'}
 
-Precautions: ${analysis.precautions}
+Emergency Warning: ${analysis.emergencyWarning || 'None'}`;
 
-Next Steps: ${analysis.steps}
-    `.trim();
-    
     navigator.clipboard.writeText(textToCopy);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -183,6 +196,61 @@ Next Steps: ${analysis.steps}
           <h4 className="text-sm font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3">Analysis Details</h4>
           <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-sm">{analysis.details}</p>
         </div>
+
+        {/* Lab Values - if present */}
+        {analysis.lab_values && analysis.lab_values.length > 0 && (
+          <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 border-l-4 border-cyan-600">
+            <h4 className="text-sm font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4">📊 Extracted Lab Values & Interpretation</h4>
+            <div className="grid gap-4">
+              {analysis.lab_values.map((lab, idx) => (
+                <div 
+                  key={idx} 
+                  className={`p-4 rounded-2xl border-l-4 ${
+                    lab.status === 'Normal' 
+                      ? 'bg-green-50 dark:bg-green-900/20 border-green-500' 
+                      : lab.status === 'Borderline'
+                      ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-500'
+                      : 'bg-red-50 dark:bg-red-900/20 border-red-500'
+                  }`}
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <h5 className="font-bold text-slate-900 dark:text-white text-sm">{lab.parameter}</h5>
+                      <p className="text-xs text-slate-600 dark:text-slate-400">
+                        Value: <span className="font-bold">{lab.value} {lab.unit}</span>
+                      </p>
+                    </div>
+                    <span className={`text-xs font-bold px-3 py-1 rounded-full ${
+                      lab.status === 'Normal' 
+                        ? 'bg-green-200 text-green-800 dark:bg-green-900 dark:text-green-200' 
+                        : lab.status === 'Borderline'
+                        ? 'bg-amber-200 text-amber-800 dark:bg-amber-900 dark:text-amber-200'
+                        : 'bg-red-200 text-red-800 dark:bg-red-900 dark:text-red-200'
+                    }`}>
+                      {lab.status}
+                    </span>
+                  </div>
+                  
+                  <div className="text-xs text-slate-600 dark:text-slate-400 mb-2">
+                    <p><span className="font-semibold">Normal Range:</span> {lab.normal_range}</p>
+                  </div>
+                  
+                  <div className="bg-white/50 dark:bg-slate-900/50 rounded-xl p-3 mb-2">
+                    <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+                      <span className="font-semibold text-slate-900 dark:text-white">What it means:</span> {lab.explanation}
+                    </p>
+                  </div>
+                  
+                  {lab.interpretation && (
+                    <div className="text-xs text-slate-600 dark:text-slate-400 italic">
+                      <span className="font-semibold">Interpretation:</span> {lab.interpretation}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Solution */}
         <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 border-l-4 border-green-600">

@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import nodemailer from 'nodemailer';
 import cors from 'cors';
-import fetch from 'node-fetch';
+import multer from 'multer';
 import connectDB from './config/database.js';
 import Patient from './models/Patient.js';
 import Doctor from './models/Doctor.js';
@@ -119,72 +119,64 @@ async function sendNotificationEmail({ to, subject, body, html, attachments = []
   return info;
 }
 
-const GEMINI_API_KEY = (process.env.GEMINI_API_KEY || '').trim();
-const GEMINI_MODEL = 'gemini-1.5-flash';
+export async function generateAIResponse(prompt) {
+  try {
+    const apiKey = process.env.OPENROUTER_API_KEY?.trim();
+    const baseUrl = process.env.OPENROUTER_BASE_URL?.trim() || 'https://openrouter.ai';
+    const model = process.env.OPENROUTER_MODEL?.trim() || 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free';
 
-async function callGeminiText(prompt, temperature = 0.25, maxOutputTokens = 512) {
-  if (!GEMINI_API_KEY) {
-    throw new Error('Gemini API key is not configured on the server. Please set GEMINI_API_KEY in your .env file.');
-  }
-
-  const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${encodeURIComponent(GEMINI_API_KEY)}`;
-  const response = await fetch(apiUrl, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      contents: [
-        {
-          parts: [
-            {
-              text: prompt
-            }
-          ]
-        }
-      ],
-      generationConfig: {
-        temperature,
-        maxOutputTokens,
-        topP: 0.95,
-        topK: 40
-      }
-    })
-  });
-
-  const text = await response.text();
-  const contentType = response.headers.get('content-type') || '';
-
-  if (!response.ok) {
-    let debug = text;
-    try {
-      const parsedError = JSON.parse(text);
-      debug = parsedError?.error?.message || JSON.stringify(parsedError);
-    } catch {
-      // keep raw text if it is not JSON
+    if (!apiKey) {
+      console.error('[AI] Missing OPENROUTER_API_KEY');
+      return 'AI service temporarily unavailable';
     }
-    throw new Error(`Gemini API error: ${response.status} ${debug}`);
-  }
 
-  if (contentType.includes('application/json')) {
-    try {
-      const body = JSON.parse(text);
-      const firstContent = body?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-      if (firstContent) {
-        return firstContent;
-      }
-      return body?.output || '';
-    } catch (jsonError) {
-      throw new Error(`Gemini API returned invalid JSON: ${jsonError.message}. Response: ${text.slice(0, 400)}`);
+    console.log(`[AI] Sending request to ${baseUrl} using model ${model}`);
+
+    const response = await fetch(`${baseUrl}/api/v1/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model,
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a helpful healthcare assistant. Give clear, safe, and structured responses. Avoid giving dangerous medical advice.'
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        temperature: 0.7
+      })
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      console.error('[AI] OpenRouter error:', response.status, data);
+      return data?.error?.message || data?.error || `AI service error ${response.status}`;
     }
-  }
 
-  return text.trim();
+    const content = data?.choices?.[0]?.message?.content;
+    if (content && String(content).trim()) {
+      return String(content).trim();
+    }
+
+    console.warn('[AI] No response content from OpenRouter:', data);
+    return 'No response from AI';
+  } catch (error) {
+    console.error('[AI ERROR]:', error);
+    return 'AI service temporarily unavailable';
+  }
 }
 
 async function startServer() {
   const app = express();
   const PORT = 3000;
+  const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
   app.use(express.json({ limit: '100mb' }));
   app.use(express.urlencoded({ limit: '100mb', extended: true }));
@@ -205,30 +197,49 @@ async function startServer() {
         return res.status(400).json({ success: false, message: 'Prompt is required.' });
       }
 
-      const response = await callGeminiText(
-        `You are a healthcare assistant. Answer the user's question in ${language === 'kn' ? 'Kannada' : 'English'}. Respond clearly, gently, and include simple medical guidance when applicable. User says: ${prompt}`,
-        0.35,
-        512
+      const response = await generateAIResponse(
+        `You are a healthcare assistant. Answer the user's question in ${language === 'kn' ? 'Kannada' : 'English'}. Respond clearly, gently, and include simple medical guidance when applicable. User says: ${prompt}`
       );
 
       return res.json({ success: true, output: response.trim() });
     } catch (error) {
       console.error('[AI Chat] Error:', error?.message || error);
-      return res.status(500).json({ success: false, message: 'AI chat failed to generate a response.' });
+      return res.status(500).json({ success: false, message: error?.message || 'AI chat failed to generate a response.' });
     }
   });
 
-  app.post('/api/ai/analyze', async (req, res) => {
+  app.post('/api/ai/analyze', upload.single('file'), async (req, res) => {
     try {
       const { type = 'report', language = 'en', content = '' } = req.body;
       const typeLabel = type === 'medicine' ? 'medicine label or packaging' : type === 'prescription' ? 'prescription' : 'medical report';
       const reportContent = String(content || '').trim();
-      const contentPrompt = reportContent ? `Patient report content:\n${reportContent}\n\n` : '';
+      const file = req.file;
 
-      const response = await callGeminiText(
-        `You are an experienced medical assistant. A patient submitted a ${typeLabel}. ${contentPrompt}Provide a concise analysis in ${language === 'kn' ? 'Kannada' : 'English'}. Return only valid JSON with keys: title, details, disease, solution, homeRemedy, medicine, precautions, steps.`,
-        0.2,
-        600
+      let extractedFileText = '';
+      let fileDescription = '';
+
+      if (file) {
+        fileDescription = `Uploaded file: ${file.originalname} (${file.mimetype}).`;
+        if (file.mimetype.startsWith('text/') || file.originalname.toLowerCase().endsWith('.txt')) {
+          extractedFileText = file.buffer.toString('utf8').trim();
+        }
+      }
+
+      const contentPromptParts = [];
+      if (reportContent) {
+        contentPromptParts.push(`Patient report content:\n${reportContent}`);
+      }
+      if (extractedFileText) {
+        contentPromptParts.push(`Extracted text from uploaded file:\n${extractedFileText}`);
+      }
+      if (file && !extractedFileText) {
+        contentPromptParts.push(`${fileDescription} Use the uploaded file information and any provided report text to infer the patient's condition.`);
+      }
+
+      const contentPrompt = contentPromptParts.length > 0 ? `${contentPromptParts.join('\n\n')}\n\n` : '';
+
+      const response = await generateAIResponse(
+        `You are an experienced medical assistant. A patient submitted a ${typeLabel}. ${contentPrompt}Provide a concise analysis in ${language === 'kn' ? 'Kannada' : 'English'}. Return only valid JSON with keys: title, details, disease, solution, homeRemedy, medicine, precautions, steps. If the report indicates malaria, set the disease field to "malaria disease". Use safe medical language and do not include any extra text outside JSON.`
       );
 
       let parsed;
@@ -249,7 +260,7 @@ async function startServer() {
       return res.json({ success: true, output: parsed });
     } catch (error) {
       console.error('[AI Analyze] Error:', error?.message || error);
-      return res.status(500).json({ success: false, message: 'AI analysis failed to complete.' });
+      return res.status(500).json({ success: false, message: error?.message || 'AI analysis failed to complete.' });
     }
   });
 

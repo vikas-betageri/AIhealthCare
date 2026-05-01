@@ -17,23 +17,32 @@
   --color-medical-900: #1E3A8A;
 }
 
-body {
-  @apply bg-slate-50 text-slate-800 font-sans antialiased transition-colors duration-300;
+html {
+  scroll-behavior: smooth;
 }
 
-.dark body {
+body {
+  @apply bg-slate-50 text-slate-800 font-sans antialiased transition-colors duration-300 overflow-x-hidden;
+}
+
+html.dark body {
   @apply bg-[#0F172A] text-slate-100;
 }
 
-.medical-gradient {
-  background: linear-gradient(135deg, #1D4ED8 0%, #1E3A8A 100%);
+img,
+svg {
+  max-width: 100%;
+  height: auto;
 }
 
-.glass-card {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 
 .dark .glass-card {
   background: rgba(30, 41, 59, 0.7);

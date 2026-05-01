@@ -39,7 +39,7 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   if (allowedRoles && !allowedRoles.includes(userType)) return <Navigate to="/" />;
   
   return (
-    <div className="flex bg-slate-50 dark:bg-[#0F172A] min-h-screen">
+    <div className="flex bg-slate-50 dark:bg-[#0F172A] min-h-screen overflow-x-hidden">
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="flex-1 md:ml-64 transition-all duration-300">
         <Navbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />

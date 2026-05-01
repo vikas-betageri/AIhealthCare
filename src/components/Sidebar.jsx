@@ -63,7 +63,7 @@ const Sidebar = ({ isOpen, onClose }) => {
       )}
       
       {/* Sidebar */}
-      <div className={`fixed md:static w-64 h-screen bg-white dark:bg-[#1E293B] border-r border-slate-200 dark:border-slate-800 flex flex-col z-20 overflow-hidden transition-all duration-300 ${
+      <div className={`fixed md:static w-full max-w-xs md:w-64 h-full md:h-screen bg-white dark:bg-[#1E293B] border-r border-slate-200 dark:border-slate-800 flex flex-col z-20 overflow-hidden transition-all duration-300 ${
         isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
       }`}>
         <div className="p-4 sm:p-6 flex items-center justify-between">

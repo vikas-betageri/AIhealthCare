@@ -29,7 +29,7 @@ const Navbar = ({ onMenuClick }) => {
       </div>
 
       {/* Right Side Controls */}
-      <div className="flex items-center gap-2 sm:gap-4 ml-auto md:ml-4">
+      <div className="flex flex-wrap items-center gap-2 sm:gap-4 ml-auto md:ml-4">
         {/* Language Selector - Simplified on mobile */}
         <div className="relative group">
           <button className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 transition-colors text-xs sm:text-sm">

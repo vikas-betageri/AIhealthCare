@@ -69,7 +69,8 @@ const PatientDashboard = () => {
 
     setTimeout(async () => {
       try {
-        const analysisResult = await analyzeMedicalImage(type, language);
+        const promptContent = `Uploaded document: ${file.name || 'medical document'}. Please analyze this ${type} and provide likely findings, conditions, recommendations, and precautions.`;
+        const analysisResult = await analyzeMedicalImage(type, language, promptContent);
         setResult(analysisResult);
       } catch (error) {
         console.error('[PatientDashboard] AI analysis failed:', error);
@@ -99,7 +100,7 @@ const PatientDashboard = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, i) => (
           <motion.div 
             key={i}

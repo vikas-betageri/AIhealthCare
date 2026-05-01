@@ -72,8 +72,8 @@ const PatientAIChat = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto h-[calc(100vh-160px)] flex flex-col bg-white dark:bg-[#1E293B] rounded-3xl border border-slate-100 dark:border-slate-800 shadow-xl overflow-hidden">
-      <div className="p-6 medical-gradient text-white flex items-center justify-between">
+    <div className="max-w-4xl mx-auto min-h-[calc(100vh-160px)] h-auto flex flex-col bg-white dark:bg-[#1E293B] rounded-3xl border border-slate-100 dark:border-slate-800 shadow-xl overflow-hidden">
+      <div className="p-6 medical-gradient text-white flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-4">
           <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center">
             <Sparkles className="w-6 h-6" />
@@ -96,7 +96,7 @@ const PatientAIChat = () => {
             }`}>
               {msg.role === 'user' ? <User className="w-5 h-5" /> : <Bot className="w-5 h-5" />}
             </div>
-            <div className={`max-w-[80%] p-5 rounded-2xl shadow-sm ${
+            <div className={`max-w-[80%] md:max-w-[70%] p-5 rounded-2xl shadow-sm ${
               msg.role === 'user' ? 'bg-medical-600 text-white rounded-tr-none' : 'bg-white dark:bg-[#1E293B] text-slate-800 dark:text-slate-200 border border-slate-100 dark:border-slate-800 rounded-tl-none'
             }`}>
               <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>

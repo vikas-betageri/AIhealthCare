@@ -40,8 +40,8 @@ const DoctorAIChat = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto h-[calc(100vh-160px)] flex flex-col bg-white rounded-3xl border border-slate-100 shadow-xl overflow-hidden">
-      <div className="p-6 bg-medical-500 text-white flex items-center justify-between">
+    <div className="max-w-4xl mx-auto min-h-[calc(100vh-160px)] h-auto flex flex-col bg-white rounded-3xl border border-slate-100 shadow-xl overflow-hidden">
+      <div className="p-6 bg-medical-500 text-white flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-4">
           <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center">
             <Sparkles className="w-6 h-6" />
@@ -64,7 +64,7 @@ const DoctorAIChat = () => {
             }`}>
               {msg.role === 'user' ? <User className="w-5 h-5" /> : <Bot className="w-5 h-5" />}
             </div>
-            <div className={`max-w-[70%] p-5 rounded-2xl ${
+            <div className={`max-w-[80%] md:max-w-[70%] p-5 rounded-2xl ${
               msg.role === 'user' ? 'bg-slate-900 text-white rounded-tr-none' : 'bg-slate-50 text-slate-800 border border-slate-100 rounded-tl-none'
             }`}>
               <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
@@ -88,7 +88,7 @@ const DoctorAIChat = () => {
       </div>
 
       <div className="p-6 border-t border-slate-100 bg-slate-50/50">
-        <div className="flex gap-4 bg-white p-2 rounded-2xl border border-slate-200 shadow-sm">
+        <div className="flex flex-col sm:flex-row gap-4 bg-white p-2 rounded-2xl border border-slate-200 shadow-sm">
           <input 
             type="text" 
             placeholder="Ask about diseases, symptoms, or medicines..." 

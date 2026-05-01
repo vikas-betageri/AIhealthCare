@@ -20,10 +20,59 @@ const PatientAIAnalyzer = () => {
 
     setTimeout(async () => {
       try {
-        const analysisResult = await analyzeMedicalImage(type, language, reportText);
-        setResult(analysisResult);
+        let content = reportText.trim();
+        let formData = null;
+
+        // If a file is uploaded, use FormData for multipart upload
+        if (file) {
+          formData = new FormData();
+          formData.append('file', file);
+          formData.append('type', type);
+          formData.append('language', language);
+          if (content) {
+            formData.append('content', content); // Additional context if provided
+          }
+        }
+
+        const requestOptions = formData ? {
+          method: 'POST',
+          body: formData
+        } : {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type, language, content })
+        };
+
+        const response = await fetch('/api/ai/analyze', requestOptions);
+        const data = await response.json();
+
+        if (data.success) {
+          setResult(data.output);
+        } else {
+          console.error('[PatientAIAnalyzer] AI analysis failed:', data.message);
+          setResult({
+            title: 'Analysis Failed',
+            details: data.message || 'Unable to analyze the document. Please try again.',
+            disease: 'N/A',
+            solution: 'Please check your file and try again.',
+            homeRemedy: 'N/A',
+            medicine: 'N/A',
+            precautions: ['Ensure file is readable and contains medical information'],
+            steps: 'Try uploading again or contact support.'
+          });
+        }
       } catch (error) {
         console.error('[PatientAIAnalyzer] AI analysis failed:', error);
+        setResult({
+          title: 'Analysis Failed',
+          details: 'Unable to connect to the AI service. Please check your connection and try again.',
+          disease: 'N/A',
+          solution: 'Please try again later.',
+          homeRemedy: 'N/A',
+          medicine: 'N/A',
+          precautions: ['Check internet connection'],
+          steps: 'Try again in a few minutes.'
+        });
       } finally {
         setAnalyzing(false);
       }
@@ -73,6 +122,7 @@ const PatientAIAnalyzer = () => {
               <input 
                 type="file" 
                 className="hidden" 
+                accept=".pdf,.jpg,.jpeg,.png,.gif,.bmp,.tiff,image/*,application/pdf"
                 onChange={(e) => setFile(e.target.files[0])} 
               />
               <div className={`w-full h-full border-2 border-dashed rounded-3xl flex flex-col items-center justify-center p-6 transition-all ${
@@ -82,12 +132,15 @@ const PatientAIAnalyzer = () => {
                   <>
                     <CheckCircle2 className="w-12 h-12 text-green-500 mb-3" />
                     <p className="text-sm font-bold text-green-700 text-center truncate w-full dark:text-green-400">{file.name}</p>
+                    <p className="text-xs text-green-600 mt-1 dark:text-green-500">
+                      {(file.size / 1024 / 1024).toFixed(2)} MB
+                    </p>
                   </>
                 ) : (
                   <>
                     <Upload className="w-12 h-12 text-slate-300 mb-3 group-hover:text-medical-500" />
                     <p className="text-sm font-bold text-slate-500 text-center dark:text-slate-400">Click to upload or drag & drop</p>
-                    <p className="text-[10px] text-slate-400 mt-2 uppercase font-bold tracking-widest text-center">PNG, JPG, PDF up to 10MB</p>
+                    <p className="text-[10px] text-slate-400 mt-2 uppercase font-bold tracking-widest text-center">PDF, JPG, PNG, GIF, BMP, TIFF up to 10MB</p>
                   </>
                 )}
               </div>

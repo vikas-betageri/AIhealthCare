@@ -106,11 +106,11 @@ const Home = () => {
             animate={{ opacity: 1, scale: 1 }}
             className="lg:w-1/2 relative"
           >
-            <div className="relative z-10 bg-white dark:bg-[#1E293B] p-8 rounded-[3.5rem] shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden transition-colors">
+            <div className="relative z-10 bg-white dark:bg-[#1E293B] p-6 sm:p-8 rounded-[3.5rem] shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden transition-colors">
               <img 
                 src="https://images.unsplash.com/photo-1576091160550-217359f4ecf8?q=80&w=2070&auto=format&fit=crop" 
                 alt="Diagnostics" 
-                className="w-full h-[400px] object-cover rounded-[2.5rem]"
+                className="w-full h-72 sm:h-80 lg:h-[400px] object-cover rounded-[2.5rem]"
               />
               <div className="absolute top-12 right-12 bg-white/90 dark:bg-slate-800/90 backdrop-blur px-6 py-4 rounded-3xl shadow-xl flex items-center gap-4 border border-white/20">
                 <div className="w-12 h-12 bg-green-500 rounded-2xl flex items-center justify-center text-white">

@@ -315,11 +315,11 @@ const DoctorDashboard = () => {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            className="bg-white dark:bg-[#1E293B] max-w-2xl w-full rounded-3xl shadow-2xl overflow-hidden"
+            className="bg-white dark:bg-[#1E293B] max-w-2xl w-full max-h-[90vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
-            <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-8 flex justify-between items-center">
+            <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-8 flex justify-between items-center flex-shrink-0">
               <div>
                 <h2 className="text-2xl font-black text-white uppercase tracking-tight">Schedule Appointment</h2>
                 <p className="text-blue-100 text-sm font-medium mt-1">Set date, time, and meeting type for patient</p>
@@ -333,7 +333,7 @@ const DoctorDashboard = () => {
             </div>
 
             {/* Modal Body */}
-            <div className="p-8 space-y-8">
+            <div className="p-8 space-y-8 overflow-y-auto flex-1">
               {/* Patient Info */}
               {getPatientDetails(selectedAppointment.patientId) && (
                 <div className="bg-slate-50 dark:bg-slate-800/30 p-6 rounded-2xl border border-slate-200 dark:border-slate-700">
@@ -463,7 +463,7 @@ const DoctorDashboard = () => {
             </div>
 
             {/* Modal Footer */}
-            <div className="bg-slate-50 dark:bg-slate-800/50 p-8 flex justify-end gap-3 border-t border-slate-200 dark:border-slate-700">
+            <div className="bg-slate-50 dark:bg-slate-800/50 p-8 flex justify-end gap-3 border-t border-slate-200 dark:border-slate-700 flex-shrink-0">
               <button
                 onClick={() => setSelectedAppointment(null)}
                 className="px-6 py-3 bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white rounded-xl font-bold text-sm uppercase tracking-widest hover:bg-slate-300 dark:hover:bg-slate-600 transition-all"
