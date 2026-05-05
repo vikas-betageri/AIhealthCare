@@ -175,7 +175,7 @@ export async function generateAIResponse(prompt) {
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = process.env.PORT || 3000;
   const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
   app.use(express.json({ limit: '100mb' }));
